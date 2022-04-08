@@ -21,6 +21,7 @@ float chargedVBat = 4.21;
 boolean aquisition = false;
 
 int curTest = SIMULATION;
+
 int control_mode = CHARGE_MODE;
 int charge_counter = 1;
 int numTests = 2;
