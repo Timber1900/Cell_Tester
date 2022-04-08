@@ -23,7 +23,7 @@ boolean aquisition = false;
 int curTest = STEP_DISCHARGE;
 int control_mode = CHARGE_MODE;
 int charge_counter = 1;
-int numTests = 2;
+int numTests = 3;
 
 unsigned long holdChargeMillis;
 unsigned long initalHoldMillis;
