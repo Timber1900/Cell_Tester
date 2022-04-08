@@ -117,6 +117,8 @@ void loop()
       break;
     case STEP_DISCHARGE:
       stepped_discharge(10, 30 * 1000);
+    case SIMULATION:
+      corrente_ref(curTime);
     default:
       break;
     }

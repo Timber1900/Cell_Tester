@@ -10,6 +10,7 @@
 
 #define CONSTANT_CURRENT 1
 #define STEP_DISCHARGE 2
+#define SIMULATION 3
 #define HOLD_TIME 180000
 
 const int vBatPin = A15;
@@ -38,5 +39,5 @@ void controlCurrent(float vTarget);
 float readPinValue(int pin);
 void hold_charge(int nextTask);
 void stepped_discharge(float cur, int discharge_milliseconds);
-
+void corrente_ref(long curTime);
 #endif
