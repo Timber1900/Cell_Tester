@@ -13,10 +13,12 @@ extern float Id[];
 int index_t = 0;
 const int index_t_total =sizeof(Id) / sizeof(Id[0]);
 
+extern double shuntCur, vBat, LM35Temp;
+extern float chargedCur, chargedVBat;
+extern int curDischarge, control_mode, charge_counter, curTest, next_mode;
+extern unsigned long holdChargeMillis;
 extern boolean aquisition;
-extern int control_mode, charge_counter, next_mode;
-unsigned long discharge_begin;
-
+extern unsigned long discharge_begin;
 
 void discharge_battery(float cur)
 {
