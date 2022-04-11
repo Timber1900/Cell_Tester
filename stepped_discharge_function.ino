@@ -18,7 +18,7 @@ void charge_battery_step(float *curSoc)
   digitalWrite(chargePin, HIGH); // Start
 
   // If the value of curSoc is greater than 0 then the cell is charged
-  if (*curSoc >= 0)
+  if (*curSoc >= 0 || shuntCur < 0.02)
   {
     switchToHold(DISCHARGE_MODE);
   }

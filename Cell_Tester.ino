@@ -12,15 +12,15 @@ double curError = 0;              // Current PID error
 double fullError = 0;             // Total PID error
 double ambTemp = 26.0;            // Ambient temperature
 double inext;                     // Value of next PWM duty cycle
-float Kp = 275;                   // PID Proporcional constant
-float Ki = 800;                   // PID Integral constant
+float Kp = 510;                   // PID Proporcional constant
+float Ki = 340;                   // PID Integral constant
 float Kpdc = Kp / Vmax;           // PID Internal proporcional constant
-float chargedCur = 0.2;           // Current where we consider the cell charged
+float chargedCur = 0.08;          // Current where we consider the cell charged
 float chargedVBat = 4.21;         // Voltage where we consider the cell charge
 
 boolean aquisition = false; // Flag to send aquisition data to the serial monitor
 
-int curTest = STEP_DISCHARGE;   // Current test to be ran
+int curTest = CONSTANT_CURRENT; // Current test to be ran
 int control_mode = CHARGE_MODE; // Initial control mode
 int charge_counter = 1;         // Counter for the charge sequence
 int numTests = 3;               // Number of tests to run in a stepped test
@@ -29,8 +29,8 @@ unsigned long holdChargeMillis; // Time to hold charge
 unsigned long initalHoldMillis; // Initial time where charge holding began
 int next_mode;                  // Next mode after holding charge
 
-int dischargeCurrents[1] = {20}; // Array of currents to do a full constant discharge
-int curDischarge = 0;            // Current discharge being executed
+float dischargeCurrents[1] = {0.3}; // Array of currents to do a full constant discharge, the theoretical minimum is 0.26A
+int curDischarge = 0;               // Current discharge being executed
 
 void setup()
 {
@@ -82,7 +82,7 @@ void loop()
   curTime = millis();
 
   // Read the analog values in the pins and calculate currents
-  vRes = readPinValue(vResPin);
+  vRes = readPinValue(vResPin) + 0.013;
   resCur = vRes / (resValue / numRes);
   vBat = readPinValue(vBatPin);
   shuntCur = (readPinValue(shuntHighPin) - readPinValue(shuntLowPin)) / (0.172);

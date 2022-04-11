@@ -10,7 +10,7 @@
 
 #define CONSTANT_CURRENT 1
 #define STEP_DISCHARGE 2
-#define HOLD_TIME 180000 // Time to hold in HOLD_CHARGE_MODE
+#define HOLD_TIME 25000 // Time to hold in HOLD_CHARGE_MODE
 
 const int vBatPin = A15;            // Pin for the battery voltage
 const int shuntHighPin = A14;       // Pin for shunt +
@@ -22,8 +22,8 @@ const int chargePin = 30;           // Pin for the charge relay
 const int cutOffPins[2] = {33, 32}; // Pins for the emergency cut-off
 const float resValue = 0.2;         // Value of a resistor
 const int numRes = 4;               // Number of resistors
-const float aquisitionDelay = 0.1;  // Delay in milliseconds for aquisition (tested to .1)
-const float controlDelay = 0.1;     // Delay in milliseconds for control (tested at .1)
+const float aquisitionDelay = 5000; // Delay in milliseconds for aquisition (tested to .1)
+const float controlDelay = .1;      // Delay in milliseconds for control (tested at .1)
 const float Vmax = 5.0;             // High level output voltage of PWM _ 3.25 before
 
 void switchToHold(int next);
