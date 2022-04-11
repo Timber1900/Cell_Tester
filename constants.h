@@ -39,5 +39,5 @@ void controlCurrent(float vTarget);
 float readPinValue(int pin);
 void hold_charge(int nextTask);
 void stepped_discharge(float cur, int discharge_milliseconds);
-void corrente_ref(long curTime);
+void corrente_ref();
 #endif
