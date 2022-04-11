@@ -24,7 +24,7 @@ const int chargePin = 30;
 const int cutOffPins[2] = {33, 32};
 const float resValue = 0.2;
 const int numRes = 4;
-const float aquisitionDelay = 0.1; // Delay in milliseconds
+const float aquisitionDelay = 10; // Delay in milliseconds
 const float controlDelay = 0.1;
 const float Vmax = 5.0; // High level output voltage of PWM _ 3.25 before
 
