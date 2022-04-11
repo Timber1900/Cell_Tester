@@ -18,7 +18,7 @@ extern float chargedCur, chargedVBat;
 extern int curDischarge, control_mode, charge_counter, curTest, next_mode;
 extern unsigned long holdChargeMillis;
 extern boolean aquisition;
-extern unsigned long discharge_begin;
+extern unsigned long discharge_begin, curTime;
 
 void discharge_battery(float cur)
 {
@@ -32,7 +32,7 @@ void discharge_battery(float cur)
   }
 }
 
-void corrente_ref(long curTime){
+void corrente_ref(void){
   switch (control_mode)
   {
   case CHARGE_MODE:
