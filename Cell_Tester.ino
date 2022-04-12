@@ -20,10 +20,10 @@ float chargedVBat = 4.21;         // Voltage where we consider the cell charge
 
 boolean aquisition = false; // Flag to send aquisition data to the serial monitor
 
-int curTest = CONSTANT_CURRENT; // Current test to be ran
+int curTest = STEP_DISCHARGE;   // Current test to be ran
 int control_mode = CHARGE_MODE; // Initial control mode
 int charge_counter = 1;         // Counter for the charge sequence
-int numTests = 3;               // Number of tests to run in a stepped test
+int numTests = 4;               // Number of tests to run in a stepped test
 
 unsigned long holdChargeMillis; // Time to hold charge
 unsigned long initalHoldMillis; // Initial time where charge holding began
@@ -82,9 +82,16 @@ void loop()
   curTime = millis();
 
   // Read the analog values in the pins and calculate currents
-  vRes = readPinValue(vResPin) + 0.013;
-  resCur = vRes / (resValue / numRes);
+  vRes = readPinValue(vResPin);
   vBat = readPinValue(vBatPin);
+
+  if (vRes != 0)
+    vRes += 0.013;
+
+  if (vBat != 0)
+    vBat += 0.013;
+
+  resCur = vRes / (resValue / numRes);
   shuntCur = (readPinValue(shuntHighPin) - readPinValue(shuntLowPin)) / (0.172);
   LM35Temp = readPinValue(LM35Pin) * 100;
 
