@@ -36,7 +36,7 @@ void corrente_ref(void){
   switch (control_mode)
   {
   case CHARGE_MODE:
-    aquisition = true;
+    aquisition = false;
     charge_battery(charge_counter);
     charge_counter++;
     break;
@@ -57,7 +57,7 @@ void corrente_ref(void){
     }
     break;
   case HOLD_CHARGE_MODE:
-    aquisition = true;
+    aquisition = false;
     discharge_begin = curTime;
     hold_charge(next_mode);
     break;
