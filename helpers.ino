@@ -9,7 +9,6 @@ void hold_charge(int nextTask)
 {
   digitalWrite(chargePin, LOW);
   pwmWrite(pwmPin, 0);
-
   if (curTime - initalHoldMillis > HOLD_TIME && LM35Temp < ambTemp)
   {
     if (nextTask == CHARGE_MODE && curTest == CONSTANT_CURRENT)
@@ -33,7 +32,9 @@ float readPinValue(int pin)
 void controlCurrent(float vTarget)
 {
   curError = vTarget - vRes;
-  inext = ceil((Ki * (curError + fullError) * ((curTime - prevTimeControl) / 1000.0)) + curError * Kpdc);
+  inext = ceil((Ki * (curError + fullError) * ((curTime - prevTimeControl) / 1000.0)) + (curError * Kpdc));
+  if(inext < 0)
+    inext = 0;
   pwmWrite(pwmPin, inext);
   fullError += curError;
 }

@@ -12,8 +12,8 @@ double curError = 0;
 double fullError = 0;
 double ambTemp = 26.0;
 double inext;
-float Kp = 510;
-float Ki = 340;
+float Kp = 275;
+float Ki = 800;
 float Kpdc = Kp / Vmax;
 float chargedCur = 0.2;
 float chargedVBat = 4.21;
@@ -32,6 +32,9 @@ int next_mode;
 
 int dischargeCurrents[1] = {20};
 int curDischarge = 0;
+
+extern int index_t;
+extern int Id[];
 
 void setup()
 {

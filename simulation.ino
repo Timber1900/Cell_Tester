@@ -5,15 +5,15 @@
 #if TEST == 1
   #include "corrente_celltester_1volta.h"
 #elif TEST == 2
-   #include "corrente_celltester_corrida.h"
+   #include "corrente_celltester_corrida.h" //Não da para usar. Não tem memoria
 #endif
 
 extern int step;
-extern float Id[];
-int index_t = 0;
-const int index_t_total =sizeof(Id) / sizeof(Id[0]);
+extern int Id[];
+int index_t = 0, prev_index = 0;
+const int index_t_total = sizeof(Id) / sizeof(Id[0]);
 
-extern double shuntCur, vBat, LM35Temp;
+extern double shuntCur, vBat, LM35Temp, fullError;
 extern float chargedCur, chargedVBat;
 extern int curDischarge, control_mode, charge_counter, curTest, next_mode;
 extern unsigned long holdChargeMillis;
@@ -38,18 +38,23 @@ void corrente_ref(void){
   case CHARGE_MODE:
     aquisition = true;
     charge_battery(charge_counter);
+    charge_counter++;
     break;
   case DISCHARGE_MODE:
     aquisition = true;
-    if((int)(curTime-discharge_begin)%step==0){
-      index_t=curTime/step;
+    index_t=(int)((curTime-discharge_begin)/step);
+
+    if(prev_index != index_t && abs((Id[index_t] - Id[prev_index])*pow(10,-3)) > 8) {
+      fullError = 0;
     }
 
-    if(index_t >= index_t_total)
-      switchToHold(TEST_END);
-      break;
+    prev_index = index_t;
 
-    discharge_battery(Id[index_t]);
+    if(index_t >= index_t_total) {
+      switchToHold(TEST_END);
+    } else {
+      discharge_battery((Id[index_t]*pow(10,-3)));
+    }
     break;
   case HOLD_CHARGE_MODE:
     aquisition = true;
