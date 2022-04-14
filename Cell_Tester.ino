@@ -22,12 +22,32 @@ boolean aquisition = false;
 
 int curTest = SIMULATION;
 
-int control_mode = CHARGE_MODE;
+#if VOLTA == 1 //|| curTest != SIMULATION
+  int control_mode = CHARGE_MODE;
+#else
+  int control_mode = DISCHARGE_MODE;
+#endif
+
 int charge_counter = 1;
 int numTests = 2;
 
+#if VOLTA == 1 //|| curTest != SIMULATION
+    #define HOLD_TIME 1000 // Time to hold in HOLD_CHARGE_MODE
+#elif (VOLTA != 1)
+    #define HOLD_TIME 0
+#endif
+
+#if (VOLTA == 1) || (TEST == 1) //||(curTest != SIMULATION)
+    #define START_TIME 0
+#else
+    #define START_TIME 7008.518
+#endif
+  
+
 unsigned long holdChargeMillis;
 unsigned long initalHoldMillis;
+
+extern unsigned long discharge_begin;
 int next_mode;
 
 int dischargeCurrents[1] = {20};
@@ -107,7 +127,12 @@ void loop()
     // Loop de aquisição
     if (aquisition)
     {
-      Serial.println(String(curTime / 1000.0, 3) + "," + String(vBat, 3) + "," + String(resCur, 3) + "," + String(LM35Temp, 2));
+      if (VOLTA==1)
+      {
+        Serial.println(String(curTime / 1000.0 + START_TIME, 3) + "," + String(vBat, 3) + "," + String(resCur, 3) + "," + String(LM35Temp, 2));
+      }else{
+        Serial.println(String(curTime / 1000.0 + START_TIME - discharge_begin, 3) + "," + String(vBat, 3) + "," + String(resCur, 3) + "," + String(LM35Temp, 2));
+      }
     }
   }
 

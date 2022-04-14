@@ -11,7 +11,9 @@
 #define CONSTANT_CURRENT 1
 #define STEP_DISCHARGE 2
 #define SIMULATION 3
-#define HOLD_TIME 1000 // Time to hold in HOLD_CHARGE_MODE
+
+#define TEST 1  //Define o teste a realizar
+#define VOLTA 1
 
 const int vBatPin = A15;            // Pin for the battery voltage
 const int shuntHighPin = A14;       // Pin for shunt +
