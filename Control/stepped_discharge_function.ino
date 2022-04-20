@@ -45,9 +45,9 @@ void discharge_battery_step(float cur, int discharge_milliseconds, float *curSoc
       // Infinite loop to end the test
       while (1)
       {
-        aquisition = false;
+        setAquisition(false);
         Serial.println("End of stepped discharge test. Please reset arduino and remove cell."); // Warn user in serial monitor
-        digitalWrite(chargePin, LOW);                                                           // Close the charge relay
+        digitalWrite(chargePin, HIGH);                                                          // Close the charge relay
         pwmWrite(pwmPin, 0);                                                                    // Write a 0% duty cycle to the PWM
         delay(10000);                                                                           // Wait ten seconds and run again
       }
@@ -72,26 +72,26 @@ void stepped_discharge(float cur, int discharge_milliseconds)
   {
   // Runs when charging
   case CHARGE_MODE:
-    aquisition = true;         // Send data to the serial monitor
+    setAquisition(true);       // Send data to the serial monitor
     charge_battery_step(&soc); // Charge the battery
     break;
 
   // Runs when discharging the battry
   case DISCHARGE_MODE:
-    aquisition = true;                                         // Send data to the serial monitor
+    setAquisition(true);                                       // Send data to the serial monitor
     discharge_battery_step(cur, discharge_milliseconds, &soc); // Discharge the battery for a certain time
     break;
 
   // Runs while holding a charge
   case HOLD_CHARGE_MODE:
-    aquisition = true;         // Send data to the serial monitor
+    setAquisition(true);       // Send data to the serial monitor
     discharge_begin = curTime; // Update the discharge begin value in preparation for the next discharge
     hold_charge(next_mode);    // Hold the charge
     break;
 
   // Runs at the end of a test
   case TEST_END:
-    aquisition = false;                     // Don't send data to the serial monitor
+    setAquisition(false);                   // Don't send data to the serial monitor
     Serial.println("End of test.\r\n\r\n"); // Warn the user of a test end
     soc = 0;                                // Reset the soc value
     curDischarge = 0;                       // Reset the curDischarge value
@@ -102,7 +102,7 @@ void stepped_discharge(float cur, int discharge_milliseconds)
 
   // Runs in case an unfamiliar mode
   default:
-    aquisition = false;           // Don't send data to the serial monitor
+    setAquisition(false);         // Don't send data to the serial monitor
     digitalWrite(chargePin, LOW); // Close the charge relay
     pwmWrite(pwmPin, 0);          // Write a 0% duty cycle to the PWM
     break;

@@ -5,6 +5,7 @@ extern int control_mode, curTest;
 extern unsigned long curTime, prevTimeControl, initalHoldMillis;
 extern double LM35Temp, ambTemp, curError, fullError, vRes, inext;
 extern float Kpdc, Ki;
+extern boolean tempStable;
 
 // Function to hold a charge for a certain time and after the change the control mode
 // Takes as an argument the next task to run
@@ -14,7 +15,7 @@ void hold_charge(int nextTask)
   pwmWrite(pwmPin, 0);          // Write a 0% duty cycle to the PWM
 
   // Runs is the hold time is greater the the time to hold and the temperature is stable
-  if (curTime - initalHoldMillis > HOLD_TIME && LM35Temp < ambTemp)
+  if (curTime - initalHoldMillis > HOLD_TIME && tempStable)
   {
     // If running a constant current test and where about to charge the battery print "End of discharge."
     if (nextTask == CHARGE_MODE && curTest == CONSTANT_CURRENT)
@@ -49,9 +50,7 @@ void controlCurrent(float vTarget)
   fullError += curError;                                                                                  // Increase the full error
 }
 
-// Helper funtion to open the emergency relay
-void emergencyCutOff()
+void setAquisition(boolean val)
 {
-  digitalWrite(cutOffPins[0], HIGH); // sets the digital pin 13 on
-  digitalWrite(cutOffPins[1], HIGH); // sets the digital pin 13 on
+  digitalWrite(aquisitionPin, val ? HIGH : LOW);
 }

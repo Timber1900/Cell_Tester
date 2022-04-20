@@ -10,7 +10,6 @@ double resCur = 0;                // Current passing in the resistors
 double vBat = 0;                  // Battery voltage
 double vRes = 0;                  // Voltage across the resistors
 double shuntCur = 0;              // Voltage across the charge shunt
-double LM35Temp = 0;              // Temperature read by the lm35 sensor
 double curError = 0;              // Current PID error
 double fullError = 0;             // Total PID error
 double ambTemp = 26.0;            // Ambient temperature
@@ -21,8 +20,6 @@ float Kpdc = Kp / Vmax;           // PID Internal proporcional constant
 float chargedCur = 0.08;          // Current where we consider the cell charged
 float chargedVBat = 4.21;         // Voltage where we consider the cell charge
 
-boolean aquisition = false; // Flag to send aquisition data to the serial monitor
-
 int curTest = CONSTANT_CURRENT; // Current test to be ran
 int control_mode = CHARGE_MODE; // Initial control mode
 int charge_counter = 1;         // Counter for the charge sequence
@@ -31,6 +28,9 @@ int numTests = 4;               // Number of tests to run in a stepped test
 unsigned long holdChargeMillis; // Time to hold charge
 unsigned long initalHoldMillis; // Initial time where charge holding began
 int next_mode;                  // Next mode after holding charge
+
+boolean tempStable = false; // Indicates if the temperature is stable
+boolean tempCut = false;    // Indicates if temperature is too high
 
 float dischargeCurrents[3] = {10, 15, 20}; // Array of currents to do a full constant discharge, the theoretical minimum is 0.26A
 int curDischarge = 0;                      // Current discharge being executed
@@ -44,10 +44,9 @@ void setup()
 
   // Set pin modes and initial values for the charge and emergency pins
   pinMode(chargePin, OUTPUT);
-  pinMode(cutOffPins[0], OUTPUT);
-  pinMode(cutOffPins[1], OUTPUT);
-  digitalWrite(cutOffPins[0], LOW);
-  digitalWrite(cutOffPins[1], LOW);
+  pinMode(aquisitionPin, OUTPUT);
+  pinMode(tempCutPin, INPUT);
+  pinMode(tempStabPin, INPUT);
   digitalWrite(chargePin, LOW);
 
   // Initialize the PWM timers
@@ -96,40 +95,9 @@ void loop()
 
   resCur = vRes / (resValue / numRes);
   shuntCur = (readPinValue(shuntHighPin) - readPinValue(shuntLowPin)) / (0.172);
-  LM35Temp = readPinValue(LM35Pin) * 100;
 
-  // Emergency test for current
-  if (resCur > 45)
-  {
-    emergencyCutOff();
-    while (1)
-    {
-      Serial.println("EMERGENCY STOP!!! \n\rCURRENT > 45A \n\rDISCONNECT CELL, RESET");
-      delay(10000);
-    }
-  }
-
-  // Emergency test for temperature
-  if (LM35Temp > 80)
-  {
-    emergencyCutOff();
-    while (1)
-    {
-      Serial.println("EMERGENCY STOP!!! \n\rTEMPERATURE > 80º \n\rDISCONNECT CELL, RESET");
-      delay(10000);
-    }
-  }
-
-  // See if the delay time has passed since last aquisition loop
-  if (curTime - prevTimeAquisition >= aquisitionDelay)
-  {
-    prevTimeAquisition = curTime;
-    // Aquisition loop
-    if (aquisition)
-    {
-      Serial.println(String(curTime / 1000.0, 3) + "," + String(vBat, 3) + "," + String(resCur, 3) + "," + String(LM35Temp, 2));
-    }
-  }
+  tempStable = digitalRead(tempStabPin) == HIGH;
+  tempCut = digitalRead(tempCutPin) == HIGH;
 
   // See if the delay time has passed since last control loop
   if (curTime - prevTimeControl >= controlDelay)
@@ -153,6 +121,8 @@ void loop()
 // Takes as an argument the next mode the controller should take after waiting for a set time
 void switchToHold(int next)
 {
+  if (next == DISCHARGE_MODE)
+    Serial.println("About to begin a discharge, cell voltage is " + String(vBat) + " V");
   initalHoldMillis = millis();     // Time that we began holding
   control_mode = HOLD_CHARGE_MODE; // Change the control mode
   next_mode = next;                // Store the next control mode
