@@ -1,3 +1,6 @@
+// This is the project to handle the control of the discharges in the cell tester,
+// The aquisition of data is handled by a second arduino to reduce errors and increase accuracy.
+
 #include "constants.h"
 
 unsigned long curTime;            // Current time in milliseconds since the arduino started
@@ -20,7 +23,7 @@ float chargedVBat = 4.21;         // Voltage where we consider the cell charge
 
 boolean aquisition = false; // Flag to send aquisition data to the serial monitor
 
-int curTest = STEP_DISCHARGE;   // Current test to be ran
+int curTest = CONSTANT_CURRENT; // Current test to be ran
 int control_mode = CHARGE_MODE; // Initial control mode
 int charge_counter = 1;         // Counter for the charge sequence
 int numTests = 4;               // Number of tests to run in a stepped test
@@ -29,8 +32,8 @@ unsigned long holdChargeMillis; // Time to hold charge
 unsigned long initalHoldMillis; // Initial time where charge holding began
 int next_mode;                  // Next mode after holding charge
 
-float dischargeCurrents[1] = {0.3}; // Array of currents to do a full constant discharge, the theoretical minimum is 0.26A
-int curDischarge = 0;               // Current discharge being executed
+float dischargeCurrents[3] = {10, 15, 20}; // Array of currents to do a full constant discharge, the theoretical minimum is 0.26A
+int curDischarge = 0;                      // Current discharge being executed
 
 void setup()
 {

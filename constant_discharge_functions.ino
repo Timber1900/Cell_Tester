@@ -4,7 +4,7 @@
 extern double shuntCur, vBat, LM35Temp;
 extern float chargedCur, chargedVBat;
 extern int curDischarge, control_mode, charge_counter, curTest, next_mode;
-extern float dischargeCurrents[1];
+extern float dischargeCurrents[3];
 extern unsigned long holdChargeMillis;
 extern boolean aquisition;
 
