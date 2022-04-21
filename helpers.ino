@@ -1,6 +1,7 @@
 #include "constants.h"
 
-extern int control_mode, curTest;
+extern int curTest;
+extern unsigned int  control_mode;
 extern unsigned long curTime, prevTimeControl, initalHoldMillis;
 extern double LM35Temp, ambTemp, curError, fullError, vRes, inext;
 extern float Kpdc, Ki;

@@ -2,7 +2,8 @@
 
 extern double shuntCur, vBat, resCur;
 extern unsigned long prevTimeControl, curTime;
-extern int curDischarge, control_mode, charge_counter, curTest, next_mode, numTests;
+extern int curDischarge, charge_counter, curTest, next_mode, numTests;
+extern unsigned int control_mode;
 extern float chargedCur, chargedVBat;
 extern unsigned long holdChargeMillis;
 extern boolean aquisition;

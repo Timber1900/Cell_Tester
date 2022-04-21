@@ -1,5 +1,7 @@
 #include "constants.h"
 
+int curTest = SIMULATION;
+
 unsigned long curTime;
 unsigned long prevTimeAquisition;
 unsigned long prevTimeControl;
@@ -20,29 +22,10 @@ float chargedVBat = 4.21;
 
 boolean aquisition = false;
 
-int curTest = SIMULATION;
-
-#if VOLTA == 1 //|| curTest != SIMULATION
-  int control_mode = CHARGE_MODE;
-#else
-  int control_mode = DISCHARGE_MODE;
-#endif
+unsigned int start_time, control_mode;
 
 int charge_counter = 1;
 int numTests = 2;
-
-#if VOLTA == 1 //|| curTest != SIMULATION
-    #define HOLD_TIME 1000 // Time to hold in HOLD_CHARGE_MODE
-#elif (VOLTA != 1)
-    #define HOLD_TIME 0
-#endif
-
-#if (VOLTA == 1) || (TEST == 1) //||(curTest != SIMULATION)
-    #define START_TIME 0
-#else
-    #define START_TIME 7008.518
-#endif
-  
 
 unsigned long holdChargeMillis;
 unsigned long initalHoldMillis;
@@ -50,7 +33,7 @@ unsigned long initalHoldMillis;
 extern unsigned long discharge_begin;
 int next_mode;
 
-int dischargeCurrents[1] = {20};
+int dischargeCurrents[1] = {10};
 int curDischarge = 0;
 
 extern int index_t;
@@ -59,10 +42,12 @@ extern int Id[];
 void setup()
 {
   // put your setup code here, to run once:
-  Serial.begin(9600);
-  Serial.println("Initialized... v05.0");
+  Serial.begin(57600);
+  Serial.flush();
+  Serial.println("Initialized... v06.0");
   Serial.println("This is a test to calculate resistance of lithium ion cells on a stepped discharge");
   Serial.println("To start press any key..");
+  Serial.flush();
   pinMode(chargePin, OUTPUT);
   pinMode(cutOffPins[0], OUTPUT);
   pinMode(cutOffPins[1], OUTPUT);
@@ -81,9 +66,16 @@ void setup()
   }
   pwmWrite(pwmPin, 0);
 
+  if (VOLTA == 1 || TEST == 1 || curTest != SIMULATION){ //Função que só importa para simulação de 
+    control_mode = CHARGE_MODE;                          //corrida de resto funciona normalmente
+  }else{
+    control_mode = DISCHARGE_MODE;
+  }
+
   while (!Serial.available())
   {
   };
+   
   Serial.println("Starting test in...3");
   delay(1000);
   Serial.println("...2");
@@ -121,21 +113,6 @@ void loop()
     }
   }
 
-  if (curTime - prevTimeAquisition >= aquisitionDelay)
-  {
-    prevTimeAquisition = curTime;
-    // Loop de aquisição
-    if (aquisition)
-    {
-      if (VOLTA==1)
-      {
-        Serial.println(String(curTime / 1000.0 + START_TIME, 3) + "," + String(vBat, 3) + "," + String(resCur, 3) + "," + String(LM35Temp, 2));
-      }else{
-        Serial.println(String(curTime / 1000.0 + START_TIME - discharge_begin, 3) + "," + String(vBat, 3) + "," + String(resCur, 3) + "," + String(LM35Temp, 2));
-      }
-    }
-  }
-
   if (curTime - prevTimeControl >= controlDelay)
   {
     // Loop de controlo
@@ -152,6 +129,21 @@ void loop()
       break;
     }
     prevTimeControl = curTime;
+  }
+
+  if (curTime - prevTimeAquisition >= aquisitionDelay)
+  {
+    prevTimeAquisition = curTime;
+    // Loop de aquisição
+    if (aquisition)
+    {
+      if(curTest==SIMULATION){
+        Serial.println(String(curTime / 1000.0 - discharge_begin / 1000.0 , 3) + "," + String(vBat, 3) + "," + String(resCur, 3) + "," + String(LM35Temp, 2) + "," + String(Id[index_t]*pow(10,-3),3));
+        Serial.flush();
+      }else{
+      Serial.println(String(curTime / 1000.0 - discharge_begin / 1000.0 , 3) + "," + String(vBat, 3) + "," + String(resCur, 3) + "," + String(LM35Temp, 2));
+    }
+    }
   }
 }
 

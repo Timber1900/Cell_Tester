@@ -12,8 +12,12 @@
 #define STEP_DISCHARGE 2
 #define SIMULATION 3
 
-#define TEST 1  //Define o teste a realizar
-#define VOLTA 1
+#define HOLD_TIME 1000 // Time to hold in HOLD_CHARGE_MODE
+
+#define TEST 2  //Define o teste a realizar
+#define VOLTA 5
+
+#define TIME_SAVE 0 //O endereço 0 e 1 estão a ser utilizados para o teste de simulação de corrida
 
 const int vBatPin = A15;            // Pin for the battery voltage
 const int shuntHighPin = A14;       // Pin for shunt +
@@ -28,6 +32,8 @@ const int numRes = 4;               // Number of resistors
 const float aquisitionDelay = 10; // Delay in milliseconds for aquisition (tested to .1)
 const float controlDelay = .1;      // Delay in milliseconds for control (tested at .1)
 const float Vmax = 5.0;             // High level output voltage of PWM _ 3.25 before
+
+char *str[] = { "CONSTANT CURRENT", "STEP DISCHARGE", "SIMULATION"};
 
 void switchToHold(int next);
 void controlCurrent(float vTarget);

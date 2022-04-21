@@ -27,7 +27,8 @@ const int index_t_total = sizeof(Id) / sizeof(Id[0]);
 
 extern double shuntCur, vBat, LM35Temp, fullError;
 extern float chargedCur, chargedVBat;
-extern int curDischarge, control_mode, charge_counter, curTest, next_mode;
+extern int curDischarge, charge_counter, curTest, next_mode;
+extern unsigned int control_mode;
 extern unsigned long holdChargeMillis;
 extern boolean aquisition;
 extern unsigned long discharge_begin, curTime;
@@ -53,10 +54,13 @@ void corrente_ref(void){
     charge_counter++;
     break;
   case DISCHARGE_MODE:  //Teste em si
+    if(discharge_begin == NULL){
+      discharge_begin=curTime;
+    }
     aquisition = true;
     index_t=(int)((curTime-discharge_begin)/step);  //Atualizar o index em função do tempo de simulação
     prev_index = index_t;
-    if(prev_index != index_t && abs((Id[index_t] - Id[prev_index])*pow(10,-3)) > 8) { //Atualizar o erro
+    if(prev_index != index_t && abs((Id[index_t] - Id[prev_index])*pow(10,-3)) > 0.1   ) { //Atualizar o erro
       fullError = 0;
     }
     if(index_t >= index_t_total) {//Para terminar o teste
