@@ -7,19 +7,22 @@ extern int curDischarge, control_mode, charge_counter, curTest, next_mode, numTe
 extern float chargedCur, chargedVBat;
 extern unsigned long holdChargeMillis;
 extern boolean aquisition;
+boolean start = true;
 
 unsigned long discharge_begin; // Time in milliseconds that the discharge began
-float soc = 0;                 // Soc value that was used in discharge
+float soc = -9999999999;       // Soc value that was used in discharge
 
 // Function that charges the battery the amount that was discharged
 // Takes as an argument the pointer of the SOC value
-void charge_battery_step(float *curSoc)
+void charge_battery_step(float *curSoc, int counter)
 {
   digitalWrite(chargePin, HIGH); // Start
-
+  Serial.println("Charging battery, cur soc val is " + String(*curSoc));
   // If the value of curSoc is greater than 0 then the cell is charged
-  if (*curSoc >= 0 || shuntCur < 0.02)
+  if (*curSoc >= 0 || (start && (shuntCur < chargedCur || vBat > chargedVBat) && counter % 50 == 0))
   {
+    start = false;
+    *curSoc = 0;
     switchToHold(DISCHARGE_MODE);
   }
 
@@ -48,17 +51,27 @@ void discharge_battery_step(float cur, int discharge_milliseconds, float *curSoc
         setAquisition(false);
         Serial.println("End of stepped discharge test. Please reset arduino and remove cell."); // Warn user in serial monitor
         digitalWrite(chargePin, HIGH);                                                          // Close the charge relay
-        pwmWrite(pwmPin, 0);                                                                    // Write a 0% duty cycle to the PWM
-        delay(10000);                                                                           // Wait ten seconds and run again
+        pwmWrite(pwmPin, 0);
+        delay(250);
+        digitalWrite(mosfetRelayPin, LOW);
+        delay(10000); // Wait ten seconds and run again
       }
     }
     else if (curDischarge >= numTests - 1)
     {
+      Serial.println("Discharge test complete, will not charge the battery.");
+      pwmWrite(pwmPin, 0);
+      delay(250);
+      digitalWrite(mosfetRelayPin, LOW);
       switchToHold(TEST_END); // Change to TEST_END if we've run all tests
     }
     else
     {
       curDischarge++;
+      Serial.println("Discharge cycle complete, current discharge is " + String(curDischarge));
+      pwmWrite(pwmPin, 0);
+      delay(250);
+      digitalWrite(mosfetRelayPin, LOW);
       switchToHold(CHARGE_MODE); // Recharge the cell for the next test
     }
   }
@@ -72,39 +85,44 @@ void stepped_discharge(float cur, int discharge_milliseconds)
   {
   // Runs when charging
   case CHARGE_MODE:
-    setAquisition(true);       // Send data to the serial monitor
-    charge_battery_step(&soc); // Charge the battery
+    setAquisition(true);                       // Send data to the serial monitor
+    digitalWrite(mosfetRelayPin, LOW);         // Ground the mosfet gate
+    charge_battery_step(&soc, charge_counter); // Charge the battery
+    charge_counter++;
     break;
 
   // Runs when discharging the battry
   case DISCHARGE_MODE:
     setAquisition(true);                                       // Send data to the serial monitor
+    digitalWrite(mosfetRelayPin, HIGH);                        // Ground the mosfet gate
     discharge_battery_step(cur, discharge_milliseconds, &soc); // Discharge the battery for a certain time
     break;
 
   // Runs while holding a charge
   case HOLD_CHARGE_MODE:
-    setAquisition(true);       // Send data to the serial monitor
-    discharge_begin = curTime; // Update the discharge begin value in preparation for the next discharge
-    hold_charge(next_mode);    // Hold the charge
+    setAquisition(true);               // Send data to the serial monitor
+    discharge_begin = curTime;         // Update the discharge begin value in preparation for the next discharge
+    digitalWrite(mosfetRelayPin, LOW); // Ground the mosfet gate
+    hold_charge(next_mode);            // Hold the charge
     break;
 
   // Runs at the end of a test
   case TEST_END:
-    setAquisition(false);                   // Don't send data to the serial monitor
-    Serial.println("End of test.\r\n\r\n"); // Warn the user of a test end
-    soc = 0;                                // Reset the soc value
-    curDischarge = 0;                       // Reset the curDischarge value
-    control_mode = CHARGE_MODE;             // Reset the control mode
-    digitalWrite(chargePin, LOW);           // Close the charge relay
-    pwmWrite(pwmPin, 0);                    // Write a 0% duty cycle to the PWM
+    setAquisition(false);              // Don't send data to the serial monitor
+    soc = 0;                           // Reset the soc value
+    curDischarge = 0;                  // Reset the curDischarge value
+    control_mode = CHARGE_MODE;        // Reset the control mode
+    digitalWrite(chargePin, LOW);      // Close the charge relay
+    digitalWrite(mosfetRelayPin, LOW); // Ground the mosfet gate
+    pwmWrite(pwmPin, 0);               // Write a 0% duty cycle to the PWM
     break;
 
   // Runs in case an unfamiliar mode
   default:
-    setAquisition(false);         // Don't send data to the serial monitor
-    digitalWrite(chargePin, LOW); // Close the charge relay
-    pwmWrite(pwmPin, 0);          // Write a 0% duty cycle to the PWM
+    setAquisition(false);              // Don't send data to the serial monitor
+    digitalWrite(chargePin, LOW);      // Close the charge relay
+    digitalWrite(mosfetRelayPin, LOW); // Ground the mosfet gate
+    pwmWrite(pwmPin, 0);               // Write a 0% duty cycle to the PWM
     break;
   }
 }

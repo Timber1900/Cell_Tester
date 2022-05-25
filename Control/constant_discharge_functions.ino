@@ -4,7 +4,6 @@
 extern double shuntCur, vBat, LM35Temp;
 extern float chargedCur, chargedVBat;
 extern int curDischarge, control_mode, charge_counter, curTest, next_mode;
-extern float dischargeCurrents[3];
 extern unsigned long holdChargeMillis;
 extern boolean aquisition, tempCut;
 
@@ -16,9 +15,9 @@ void charge_battery(int counter)
   digitalWrite(chargePin, HIGH); // Set the charge relay to high
   Serial.println("Charging battery, current voltage: " + String(vBat) + "V, current charge current: " + String(shuntCur) + "A");
   // If charged switch to hold and exepect a next discharge
-  if ((shuntCur < chargedCur || vBat > chargedVBat) && counter % 500 == 0)
+  if ((shuntCur < chargedCur || vBat > chargedVBat) && counter % 50 == 0)
   {
-    Serial.println("Done charging, will hold for voltage and temperature stabilization for " + String(HOLD_TIME / (1000 * 60)) + " seconds.");
+    Serial.println("Done charging, will hold for voltage and temperature stabilization for " + String((int)((int)HOLD_TIME / (1000))) + " seconds.");
     switchToHold(DISCHARGE_MODE);
   }
 }
@@ -35,14 +34,14 @@ void discharge_battery_constant(float cur)
   else
   {
     // If all tests have been run hold the charge and after that end the tests
-    if (curDischarge == (sizeof(dischargeCurrents) / sizeof(dischargeCurrents[0]) - 1))
+    if (curDischarge >= NUM_CURRENTS - 1)
     {
-      Serial.println("Finished all tests.");
+      Serial.println("Finished all " + String(NUM_CURRENTS) + " tests, current discharge was " + String(curDischarge) + ".");
       switchToHold(TEST_END);
     }
     else
     {
-      Serial.println("Done discharging, will begin the next discharge after chargeing.");
+      Serial.println("Done discharging, will begin the next discharge after charging.");
       Serial.println("Final Voltage: " + String(vBat));
       curDischarge++;
       switchToHold(CHARGE_MODE);
@@ -58,6 +57,8 @@ void constant_current()
   {
   // Runs when charging
   case CHARGE_MODE:
+    digitalWrite(mosfetRelayPin, LOW);
+    pwmWrite(pwmPin, 0);
     setAquisition(false);           // Don't send data to the serial monitor
     charge_battery(charge_counter); // Charge the battery
     charge_counter++;
@@ -65,18 +66,22 @@ void constant_current()
 
   // Runs when discharging the battry
   case DISCHARGE_MODE:
+    digitalWrite(mosfetRelayPin, HIGH);
     setAquisition(true);                                         // Send data to the serial monitor
     discharge_battery_constant(dischargeCurrents[curDischarge]); // Keep the discharge current constant at the current test
     break;
 
   // Runs while holding a charge
   case HOLD_CHARGE_MODE:
-    setAquisition(true);    //  Don't send data to the serial monitor
+    digitalWrite(mosfetRelayPin, LOW);
+    pwmWrite(pwmPin, 0);
+    setAquisition(false);   //  Don't send data to the serial monitor
     hold_charge(next_mode); // Hold the charge and after that change to next_mode
     break;
 
   // Runs in case an unfamiliar mode, or TEST_END
   default:
+    digitalWrite(mosfetRelayPin, LOW);
     setAquisition(false);          // Don't send data to the serial monitor
     digitalWrite(chargePin, HIGH); // Close the charge relay
     pwmWrite(pwmPin, 0);           // Write a 0% duty cycle to the PWM
